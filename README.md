@@ -1,112 +1,158 @@
-# api_yatube
-API для сервиса yatube. Позволяет запрашивать данные о постах, группах и комментариях в социальной сети Yatube, а также управлять ими.
-## Технологии
-Python 3.8, Django 3.2, DRF, JWT + Djoser
-## Как запустить
-1. Клонируем репозиторий и переходим в него в командной строке
+# API для Yatube
 
-```
-git clone https://github.com/QuiShimo/api_final_yatube.git
-```
+Учебный проект Яндекс.Практикум курса Python-разработчик(backend).
 
-```
-cd api_final_yatube
-```
+## Описание
 
-2. Создаем и активируем виртуальное окружение
+Yatube - социальная сеть для публикации дневников. Позволяет публиковать посты, комментировать посты, осуществлять подписку на авторов.
 
-```
-python -m venv env
-```
+Для разработки API использован Django REST framework.
 
-```
-source env/Scripts/activate
-```
+## Установка и запуск в dev-режиме
 
-3. Устанавливаем необходимые зависимости из requirements
+ 1. Установите виртуальное окружение (команда: `python -m venv venv`).
+ 2. Активируйте виртуальное окружение (команда: `source venv/Scripts/activate`).
+ 3. Установите зависимости из файла requirements.txt (команда: `pip install -r requirements.txt`).
+ 4. Запустите dev-сервер (команда: `python manage.py runserver`).
 
-```
-pip install -r requirements.txt
-```
+## Документация к API
 
-4. Делаем миграции
+ После запуска dev-сервера документация к API доступна по адресу:
+ <http://127.0.0.1:8000/redoc/>
 
-```
-python yatube_api/manage.py migrate
-```
+## Примеры запросов
 
-5. Запускаем проект
+### Публикация и получение постов
 
-```
-python yatube_api/manage.py runserver
-```
-## Примеры работы с API для всех пользователей
-Для неавторизованных пользователей работа с API доступна только в режиме чтения.
-- Получить список всех публикаций:
-```
-GET api/v1/posts/
-```
-При указании параметров limit и offset выдача будет работать с пагинацией.
-- Получение публикации по id:
-``` 
-GET api/v1/posts/{id}/
-```
-- Получение списка доступных сообществ:
-```
-GET api/v1/groups/
-```
-- Получение информации о сообществе по id:
-```
-GET api/v1/groups/{id}/
-```
-- Получение всех комментариев к публикации
-```
-GET api/v1/{post_id}/comments/
-``` 
-- Получение комментария к публикации по id:
-```
-GET api/v1/{post_id}/comments/{id}/
-```
-## Примеры работы с API для авторизованных пользователей
-- Создание публикации:
-``` 
-POST /api/v1/posts/
-```
-тело запроса:
-```
+Request: ```[GET] http://127.0.0.1:8000/api/v1/posts/?limit=2&offset=1```
+
+Response:
+
+```json
 {
-"text": "string",
-"image": "string",
-"group": 0
-}
-```
-- Обновление публикации:
-```
-PUT /api/v1/posts/{id}/
-```
-тело запроса:
-```
-{
-"text": "string",
-"image": "string",
-"group": 0
+    "count": 5,
+    "next": "http://127.0.0.1:8000/api/v1/posts/?limit=2&offset=3",
+    "previous": "http://127.0.0.1:8000/api/v1/posts/?limit=2",
+    "results": [
+        {
+            "id": 2,
+            "author": "string",
+            "text": "string",
+            "pub_date": "2022-08-06T10:01:17.273956Z",
+            "image": "string",
+            "group": 0
+        },
+        {
+            "id": 3,
+            "author": "string",
+            "text": "string",
+            "pub_date": "2022-08-06T10:42:39.095878Z",
+            "image": "string",
+            "group": 0
+        }
+    ]
 }
 ```
 
-- Частичное обновление публикации:
-```
-PATCH /api/v1/posts/{id}/
-```
-тело запроса
-```
+Request: ```[POST] http://127.0.0.1:8000/api/v1/posts/```
+
+Request body:
+
+```json
 {
-"text": "string",
-"image": "string",
-"group": 0
+    "text": "string",
+    "image": "string",
+    "group": 0
 }
 ```
 
-- Удаление публикации:
+Response:
+
+```json
+{
+    "id": 0,
+    "author": "string",
+    "text": "string",
+    "pub_date": "2022-08-06T10:59:31.721673Z",
+    "image": "string",
+    "group": 0
+}
 ```
-DEL /api/v1/posts/{id}/
+
+### Публикация и получение комментариев к постам
+
+Request:```[GET] http://127.0.0.1:8000/api/v1/posts/1/comments/```
+
+Response:
+
+```json
+[
+    {
+        "id": 1,
+        "author": "string",
+        "post": 1,
+        "text": "string",
+        "created": "2022-08-06T10:59:31.721673Z"
+    }
+]
 ```
+
+Request:```[POST] http://127.0.0.1:8000/api/v1/posts/1/comments/```
+
+Request body:
+
+```json
+{
+    "text": "1st comment"
+}
+```
+
+Response:
+
+```json
+{
+    "id": 1,
+    "author": "string",
+    "post": 1,
+    "text": "string",
+    "created": "2022-08-06T10:59:31.721673Z"
+}
+```
+
+### Подписка на авторов
+
+Request: ```[GET] http://127.0.0.1:8000/api/v1/follow/```
+
+Response:
+
+```json
+[
+    {
+        "user": "string",
+        "following": "string"
+    }
+]
+```
+
+Request: ```[POST] http://127.0.0.1:8000/api/v1/follow/```
+
+Request body:
+
+```json
+{
+    "following": "string"
+}
+```
+
+Response:
+
+```json
+{
+    "user": "string",
+    "following": "string"
+}
+```
+
+## Автор
+
+ Андрей Плотников (Andy.Plo@yandex.ru)
