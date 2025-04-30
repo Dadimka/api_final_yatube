@@ -1,158 +1,137 @@
-# API для Yatube
+# Проект API для Yatube Final
 
-Учебный проект Яндекс.Практикум курса Python-разработчик(backend).
+REST API для социальной сети Yatube, реализованное на Django REST Framework.  
+API предоставляет функционал для работы с постами, комментариями, группами и подписками пользователей.
 
-## Описание
+## Как развернуть проект локально
 
-Yatube - социальная сеть для публикации дневников. Позволяет публиковать посты, комментировать посты, осуществлять подписку на авторов.
-
-Для разработки API использован Django REST framework.
-
-## Установка и запуск в dev-режиме
-
- 1. Установите виртуальное окружение (команда: `python -m venv venv`).
- 2. Активируйте виртуальное окружение (команда: `source venv/Scripts/activate`).
- 3. Установите зависимости из файла requirements.txt (команда: `pip install -r requirements.txt`).
- 4. Запустите dev-сервер (команда: `python manage.py runserver`).
-
-## Документация к API
-
- После запуска dev-сервера документация к API доступна по адресу:
- <http://127.0.0.1:8000/redoc/>
-
-## Примеры запросов
-
-### Публикация и получение постов
-
-Request: ```[GET] http://127.0.0.1:8000/api/v1/posts/?limit=2&offset=1```
-
-Response:
-
-```json
+1. Клонировать репозиторий и перейти в него:
+```bash
+git clone https://github.com/ваш-логин/api_final_yatube.git
+cd api_final_yatube
+```
+2. Создать и активировать виртуальное окружение:
+```bash
+python -m venv venv
+# Для Windows:
+venv\Scripts\activate
+# Для Linux/MacOS:
+source venv/bin/activate
+```
+3. Установить зависимости:
+```bash
+pip install -r requirements.txt
+```
+4. Применить миграции:
+```bash
+python manage.py migrate
+```
+5. Создать суперпользователя:
+```bash
+python manage.py createsuperuser
+```
+6. Запустить сервер:
+```bash
+python manage.py runserver
+```
+## Аутентификация
+Для работы с API необходимо получить JWT-токен:
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/jwt/create/ ^
+-H "Content-Type: application/json" ^
+-d '{"username":"ваш_логин", "password":"ваш_пароль"}'
+```
+Используйте полученный токен в заголовках запросов:
+```Authorization: Bearer ваш_токен```
+## Примеры запросов к API
+###  Работа с постами
+Получение публикации:
+```
+GET /api/v1/posts/{id}/
+```
+Пример ответа (200 OK):
+```
 {
-    "count": 5,
-    "next": "http://127.0.0.1:8000/api/v1/posts/?limit=2&offset=3",
-    "previous": "http://127.0.0.1:8000/api/v1/posts/?limit=2",
-    "results": [
-        {
-            "id": 2,
-            "author": "string",
-            "text": "string",
-            "pub_date": "2022-08-06T10:01:17.273956Z",
-            "image": "string",
-            "group": 0
-        },
-        {
-            "id": 3,
-            "author": "string",
-            "text": "string",
-            "pub_date": "2022-08-06T10:42:39.095878Z",
-            "image": "string",
-            "group": 0
-        }
-    ]
+  "id": 1,
+  "author": "username",
+  "text": "Текст публикации",
+  "pub_date": "2023-05-15T12:00:00Z",
+  "image": null,
+  "group": 1
 }
 ```
-
-Request: ```[POST] http://127.0.0.1:8000/api/v1/posts/```
-
-Request body:
-
-```json
+```bash
+curl -X GET http://127.0.0.1:8000/api/v1/posts/1/
+```
+Создание поста:
+```
+POST /api/v1/posts/
+```
+Тело запроса:
+```
 {
-    "text": "string",
-    "image": "string",
-    "group": 0
+  "text": "Новый пост",
+  "group": 1
 }
 ```
-
-Response:
-
-```json
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/posts/ \
+-H "Authorization: Bearer ваш_токен" \
+-H "Content-Type: application/json" \
+-d '{"text":"Текст поста", "group":1}'
+```
+### Комментарии
+Добавление комментария:
+```
+POST /api/v1/posts/{post_id}/comments/
+```
+Пример ответа (201 Created):
+```
 {
-    "id": 0,
-    "author": "string",
-    "text": "string",
-    "pub_date": "2022-08-06T10:59:31.721673Z",
-    "image": "string",
-    "group": 0
+  "id": 1,
+  "author": "username",
+  "text": "Отличный пост!",
+  "created": "2023-05-15T12:30:00Z",
+  "post": 1
 }
 ```
-
-### Публикация и получение комментариев к постам
-
-Request:```[GET] http://127.0.0.1:8000/api/v1/posts/1/comments/```
-
-Response:
-
-```json
-[
-    {
-        "id": 1,
-        "author": "string",
-        "post": 1,
-        "text": "string",
-        "created": "2022-08-06T10:59:31.721673Z"
-    }
-]
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/posts/1/comments/ \
+-H "Authorization: Bearer ваш_токен" \
+-H "Content-Type: application/json" \
+-d '{"text":"Мой комментарий"}'
 ```
-
-Request:```[POST] http://127.0.0.1:8000/api/v1/posts/1/comments/```
-
-Request body:
-
-```json
+### Группы
+Получение информации о сообществе:
+```
+GET /api/v1/groups/{id}/
+```
+Пример ответа (200 OK):
+```
 {
-    "text": "1st comment"
+  "id": 1,
+  "title": "Название группы",
+  "slug": "group-slug",
+  "description": "Описание группы"
 }
 ```
-
-Response:
-
-```json
+### Подписки
+Получение списка подписок:
+```
+GET /api/v1/follow/
+```
+Подписка на автора:
+```
+POST /api/v1/follow/
+```
+Тело запроса:
+```
 {
-    "id": 1,
-    "author": "string",
-    "post": 1,
-    "text": "string",
-    "created": "2022-08-06T10:59:31.721673Z"
+  "following": "username_автора"
 }
 ```
-
-### Подписка на авторов
-
-Request: ```[GET] http://127.0.0.1:8000/api/v1/follow/```
-
-Response:
-
-```json
-[
-    {
-        "user": "string",
-        "following": "string"
-    }
-]
-```
-
-Request: ```[POST] http://127.0.0.1:8000/api/v1/follow/```
-
-Request body:
-
-```json
-{
-    "following": "string"
-}
-```
-
-Response:
-
-```json
-{
-    "user": "string",
-    "following": "string"
-}
-```
-
-## Автор
-
- Андрей Плотников (Andy.Plo@yandex.ru)
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/follow/ \
+-H "Authorization: Bearer ваш_токен" \
+-H "Content-Type: application/json" \
+-d '{"following":"username"}'

@@ -1,20 +1,24 @@
-from rest_framework import routers
 from django.urls import path, include
-from .views import PostViewSet, GroupViewSet, CommentViewSet, FollowViewSet
+from rest_framework.routers import DefaultRouter
+from .views import (PostViewSet, CommentViewSet,
+                    FollowViewSet, RegisterView,
+                    GroupViewSet)
 
-v1_router = routers.DefaultRouter()
-
-v1_router.register(r'posts', PostViewSet)
-v1_router.register(r'groups', GroupViewSet)
-v1_router.register(r'follow', FollowViewSet)
-v1_router.register(
-    r'posts/(?P<post_id>\d+)/comments',
-    CommentViewSet,
-    basename='comments'
-)
+router = DefaultRouter()
+router.register('posts', PostViewSet, basename='posts')
+router.register('follow', FollowViewSet, basename='follow')
+router.register('groups', GroupViewSet, basename='groups')
 
 urlpatterns = [
-    path('v1/', include(v1_router.urls)),
-    path('v1/', include('djoser.urls')),
-    path('v1/', include('djoser.urls.jwt')),
+    path('v1/', include(router.urls)),
+    path('v1/auth/register/', RegisterView.as_view(), name='register'),
+    path('v1/posts/<int:post_id>/comments/',
+         CommentViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('v1/posts/<int:post_id>/comments/<int:pk>/',
+         CommentViewSet.as_view({
+             'get': 'retrieve',
+             'put': 'update',
+             'patch': 'partial_update',
+             'delete': 'destroy'
+         })),
 ]
